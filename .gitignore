@@ -42,3 +42,5 @@ app/bincreate/bin_create
 app/wdog/la9310_wdog_testapp
 install
 la931x_common_headers*
+
+.cache
