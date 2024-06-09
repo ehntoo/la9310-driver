@@ -305,9 +305,9 @@ void lime0_set_rx_gain(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
         if(dbm > 30) {
             dbm = 30;
         }
-        lms7002m_set_rfe_loopback_lna_db(lms, (float) dbm, LMS7002M_CHANNEL_AB);
+        lms7002m_set_rfelna_db(lms, (float) dbm, LMS7002M_CHANNEL_AB);
     } else {
-        lms7002m_set_rfe_loopback_lna_db(lms, 0, LMS7002M_CHANNEL_AB);
+        lms7002m_set_rfelna_db(lms, 0, LMS7002M_CHANNEL_AB);
 	}
 
     //std::cout << "lms_gain_tia [0-12]" << endl;
