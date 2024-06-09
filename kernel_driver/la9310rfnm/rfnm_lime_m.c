@@ -305,7 +305,7 @@ void lime0_set_rx_gain(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
         if(dbm > 30) {
             dbm = 30;
         }
-        lms7002m_set_rfelna_db(lms, (float) dbm, LMS7002M_CHANNEL_AB);
+        lms7002m_set_rfelna_db(lms, dbm, LMS7002M_CHANNEL_AB);
     } else {
         lms7002m_set_rfelna_db(lms, 0, LMS7002M_CHANNEL_AB);
 	}
@@ -492,7 +492,7 @@ int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 	
 
 	// lime0_set_iq_rx_lpf_bandwidth(dgb_dt, parse_lime_iq_lpf(rx_ch->rfic_lpf_bw));
-	lms7002m_set_rx_lpf(lms, rx_ch->rfic_lpf_bw * 1000000);
+	lms7002m_set_rx_lpf(lms, rx_ch->rfic_lpf_bw * 1000ll * 1000);
 
 
 
