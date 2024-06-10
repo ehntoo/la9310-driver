@@ -39,18 +39,9 @@ rfnm_granita-objs += ../../../g_icewings/core/SiIceWing_Core.o
 rfnm_lime-objs := rfnm_lime_m.o 
 rfnm_lime-objs += rfnm_fe_generic.o 
 rfnm_lime-objs += rfnm_fe_lime0.o 
-# rfnm_lime-objs += dtoa.o 
 
 rfnm_lime-objs += ../../LimeSuiteNG/embedded/lms7002m/lms7002m.o
-# rfnm_lime-objs += ../../LimeSuiteNG/embedded/lms7002m/calibrations.o
 rfnm_lime-objs += ../../LimeSuiteNG/embedded/lms7002m/privates.o
-rfnm_lime-objs += ../../LimeSuiteNG/embedded/lms7002m/save_state.o
-
-# CFLAGS_REMOVE_rfnm_lime_m.o += -mgeneral-regs-only
-# CFLAGS_REMOVE_dtoa.o += -mgeneral-regs-only
-# CFLAGS_REMOVE_../../LimeSuiteNG/embedded/lms7002m/lms7002m.o += -mgeneral-regs-only
-# CFLAGS_REMOVE_../../LimeSuiteNG/embedded/lms7002m/calibrations.o += -mgeneral-regs-only
-# CFLAGS_REMOVE_../../LimeSuiteNG/embedded/lms7002m/privates.o += -mgeneral-regs-only
 
 rfnm_breakout-objs := rfnm_breakout_m.o 
 

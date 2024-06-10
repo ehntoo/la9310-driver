@@ -741,38 +741,20 @@ static int rfnm_lime_probe(struct spi_device *spi)
         return -1;
     }
 
-	for(i = 0; i < RFNM_LMS_REGS_CNT_A; i++) {
-        // uint16_t addr, value;
-        // addr = rfnm_lms_init_regs_a[i][0];
-        // value = rfnm_lms_init_regs_a[i][1];
-
-        // LMS7002M_set_mac_ch(lms, LMS_CHA);
-        // LMS7002M_spi_write(lms, addr, value);
-        // LMS7002M_regs_set(lms->regs, addr, value);
-        // //printk("Load: 0x%04x=0x%04x\n", addr, value);
-		uint32_t spi_cmd = ((0x8000 | rfnm_lms_init_regs_a[i][0]) << 16) | rfnm_lms_init_regs_a[i][1];
-		spi_result = lms_spi16_transact(&spi_cmd, NULL, 1, spi);
-    }
-
-    for(i = 0; i < RFNM_LMS_REGS_CNT_B; i++) {
-        // uint16_t addr, value;
-        // addr = rfnm_lms_init_regs_b[i][0];
-        // value = rfnm_lms_init_regs_b[i][1];
-
-        // LMS7002M_set_mac_ch(lms, LMS_CHB);
-        // LMS7002M_spi_write(lms, addr, value);
-        // LMS7002M_regs_set(lms->regs, addr, value);
-        // //printk("Load: 0x%04x=0x%04x\n", addr, value);
-		uint32_t spi_cmd = ((0x8000 | rfnm_lms_init_regs_b[i][0]) << 16) | rfnm_lms_init_regs_b[i][1];
-		spi_result = lms_spi16_transact(&spi_cmd, NULL, 1, spi);
+	// An attempt at doing a bulk write of all initial registers was not
+	// successful, despite the LMS7002M datasheet saying that: "multiple
+	// read/write is possible by repeating the instruction/data sequence while
+	// keeping SEN low". As such, we'll do individual SPI transfers for now. It
+	// seems the SEN toggle between some or all writes is important.
+	for(i = 0; i < RFNM_LMS_REGS_CNT_ALL; i++) {
+		uint32_t spi_cmd = ((0x8000 | rfnm_lms_init_regs_all[i][0]) << 16) | rfnm_lms_init_regs_all[i][1];
+		spi_write(spi, &spi_cmd, 4);
     }
 
     //turn the clocks on
-    double actualRate = 0.0;
-    // ret = LMS7002M_set_data_clock(lms, LMS_REF_FREQ, LMS_REF_FREQ, &actualRate);
 	lime_Result lms_ret = lms7002m_set_reference_clock(lms, LMS_REF_FREQ);
     if (ret != 0) {
-        printk("clock tune failure %d\n", ret);
+        printk("provided reference clock invalid %d\n", ret);
 		// kernel_neon_end();
         return -1;
     }
