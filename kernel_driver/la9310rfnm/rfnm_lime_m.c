@@ -40,8 +40,8 @@
 #include <linux/platform_device.h>
 #include <linux/spi/spi.h>
 
-void kernel_neon_begin(void);
-void kernel_neon_end(void);
+// void kernel_neon_begin(void);
+// void kernel_neon_end(void);
 
 #include "limesuiteng/embedded/lms7002m/lms7002m.h"
 
@@ -66,6 +66,55 @@ void kernel_neon_end(void);
 	void __iomem *base;
 };*/
 
+// static int lms_spi16_transact(const uint32_t* mosi, uint32_t* miso, uint32_t count, void* userData) {
+//     struct spi_device *spi = (struct spi_device *)userData;
+// 	struct spi_transfer xfer;
+// 	uint32_t *txbuf = kmalloc(4, GFP_KERNEL);
+// 	uint32_t *rxbuf = kmalloc(4, GFP_KERNEL);
+// 	size_t i;
+// 	int ret;
+
+// 	kernel_neon_end();
+
+// 	for (i=0; i < count; i++) {
+// 		memset(&xfer, 0, sizeof(xfer));
+// 		*txbuf = mosi[i];
+// 		// txbuf = ((mosi[i] & 0xFF) << 24) |
+// 		// 	((mosi[i] & 0xFF00) << 8) |
+// 		// 	((mosi[i] & 0xFF0000) >> 8) |
+// 		// 	((mosi[i] & 0xFF000000) >> 24);
+// 		xfer.tx_buf = txbuf;
+// 		xfer.len = 4;
+// 		if (!(*txbuf & (1 << 31)) && miso)
+// 			xfer.rx_buf = rxbuf;
+
+// 		ret = spi_sync_transfer(spi, &xfer, 1);
+
+// 		if (ret < 0) {
+// 			printk("spi_sync_transfer failed: %d\n", ret);
+// 			//return ERR_SI_CORE_MAX_CNTWRTE;
+// 		// } else {
+// 		// 	printk("spi_sync_transfer wrote: 0x%08x, read 0x%08x\n", txbuf, rxbuf);
+// 		}
+
+// 		// if this is a read, signified by the most significant bit being cleared,
+// 		// we need the data in the received buffer. If the miso output buffer is
+// 		// not NULL, stick the data in there.
+// 		if (!(*txbuf & (1 << 31)) && miso) {
+// 			miso[i] = *rxbuf;
+// 			// miso[i] = ((rxbuf & 0xFF) << 24) |
+// 			// ((rxbuf & 0xFF00) << 8) |
+// 			// ((rxbuf & 0xFF0000) >> 8) |
+// 			// ((rxbuf & 0xFF000000) >> 24);
+// 		}
+// 	}
+// 	kfree(rxbuf);
+// 	kfree(txbuf);
+
+// 	kernel_neon_begin();
+// 	return 0;
+// }
+
 static int lms_spi16_transact(const uint32_t* mosi, uint32_t* miso, uint32_t count, void* userData) {
     struct spi_device *spi = (struct spi_device *)userData;
 	struct spi_transfer xfer;
@@ -74,15 +123,11 @@ static int lms_spi16_transact(const uint32_t* mosi, uint32_t* miso, uint32_t cou
 	size_t i;
 	int ret;
 
-	kernel_neon_end();
+	// kernel_neon_end();
 
 	for (i=0; i < count; i++) {
 		memset(&xfer, 0, sizeof(xfer));
 		txbuf = mosi[i];
-		// txbuf = ((mosi[i] & 0xFF) << 24) |
-		// 	((mosi[i] & 0xFF00) << 8) |
-		// 	((mosi[i] & 0xFF0000) >> 8) |
-		// 	((mosi[i] & 0xFF000000) >> 24);
 		xfer.tx_buf = &txbuf;
 		xfer.len = 4;
 		if (!(txbuf & (1 << 31)) && miso)
@@ -92,9 +137,6 @@ static int lms_spi16_transact(const uint32_t* mosi, uint32_t* miso, uint32_t cou
 
 		if (ret < 0) {
 			printk("spi_sync_transfer failed: %d\n", ret);
-			//return ERR_SI_CORE_MAX_CNTWRTE;
-		// } else {
-		// 	printk("spi_sync_transfer wrote: 0x%08x, read 0x%08x\n", txbuf, rxbuf);
 		}
 
 		// if this is a read, signified by the most significant bit being cleared,
@@ -102,14 +144,10 @@ static int lms_spi16_transact(const uint32_t* mosi, uint32_t* miso, uint32_t cou
 		// not NULL, stick the data in there.
 		if (!(txbuf & (1 << 31)) && miso) {
 			miso[i] = rxbuf;
-			// miso[i] = ((rxbuf & 0xFF) << 24) |
-			// ((rxbuf & 0xFF00) << 8) |
-			// ((rxbuf & 0xFF0000) >> 8) |
-			// ((rxbuf & 0xFF000000) >> 24);
 		}
 	}
 
-	kernel_neon_begin();
+	// kernel_neon_begin();
 	return 0;
 }
 
@@ -326,10 +364,10 @@ void rfnm_rx_ch_get(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 
 
 int rfnm_tx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_tx_ch * tx_ch) {
-	kernel_neon_begin();
+	// kernel_neon_begin();
 	rfnm_api_failcode ecode = RFNM_API_OK;
 	lime_Result ret;
-    double actualRate = 0.0;
+    uint64_t actualRate = 0;
 	uint64_t freq = tx_ch->freq / (1000 * 1000);
 	// LMS7002M_t *lms;
 	struct lms7002m_context *lms;
@@ -351,7 +389,9 @@ int rfnm_tx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_tx_ch * tx_ch) {
 		ecode = RFNM_API_TUNE_FAIL;
 		goto fail;
 	}
-	printk("%d - Actual TX LO freq %s MHz\n", ret, dtoa1(actualRate/1e6));
+	actualRate = lms7002m_get_frequency_sx(lms, true);
+	// printk("%d - Actual TX LO freq %s MHz\n", ret, dtoa1(actualRate/1e6));
+	printk("%d - Actual TX LO freq %llu Hz\n", ret, actualRate);
 
 	if(freq < 1500) {
 		lime0_tx_band(dgb_dt, RFNM_LIME0_TX_BAND_LOW);
@@ -393,26 +433,25 @@ int rfnm_tx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_tx_ch * tx_ch) {
 	memcpy(dgb_dt->tx_s[0], dgb_dt->tx_ch[0], sizeof(struct rfnm_api_tx_ch));	
 
 
-	kernel_neon_end();
+	// kernel_neon_end();
 
 	return 0;
 
 fail: 
-	kernel_neon_end();
+	// kernel_neon_end();
 	return -ecode;
 
 }
 
 int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
-	kernel_neon_begin();
+	// kernel_neon_begin();
 	lime_Result ret;
 	rfnm_api_failcode ecode = RFNM_API_OK;
-    float actualRate = 0.0;
+    uint64_t actualRate = 0;
 	struct lms7002m_context *lms;
     lms = dgb_dt->priv_drv;
 	uint64_t freq = rx_ch->freq / (1000 * 1000);
 
-	
 	if(rx_ch->fm_notch == RFNM_FM_NOTCH_AUTO) {
 		lime0_fm_notch(dgb_dt, 1);
 	} else if(rx_ch->fm_notch == RFNM_FM_NOTCH_ON) {
@@ -457,8 +496,7 @@ int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 			lime0_filter_950_4000(dgb_dt);
 		}
 	}
-	
-	
+
 	lms7002m_set_active_channel(lms, LMS7002M_CHANNEL_A);
 
 	if(freq <= 60) {
@@ -473,7 +511,6 @@ int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 		lms7002m_set_path_rfe(lms, LMS7002M_PATH_RFE_LNAH);
 		rfnm_fe_srb(dgb_dt, RFNM_LIME0_LRIM, 1);
 	}
-
 	
 	if(freq < 30) {
 		freq = 30;
@@ -487,7 +524,8 @@ int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 		ecode = RFNM_API_TUNE_FAIL;
 		goto fail;
 	}
-	printk("%d - Actual RX LO freq %s MHz\n", ret, dtoa1(actualRate/1e6));
+	// printk("%d - Actual RX LO freq %s MHz\n", ret, dtoa1(actualRate/1e6));
+	printk("%d - Actual RX LO freq %llu Hz\n", ret, actualRate);
 
 	
 
@@ -575,12 +613,12 @@ int rfnm_rx_ch_set(struct rfnm_dgb *dgb_dt, struct rfnm_api_rx_ch * rx_ch) {
 	memcpy(dgb_dt->rx_s[0], dgb_dt->rx_ch[0], sizeof(struct rfnm_api_rx_ch));	
 
 
-	kernel_neon_end();
+	// kernel_neon_end();
 
 	return 0;
 
 fail: 
-	kernel_neon_end();
+	// kernel_neon_end();
 	return -ecode;
 }
 
@@ -597,7 +635,7 @@ static void rfnm_lime_cgen_frequency_changed(void* handle) {
 
 static int rfnm_lime_probe(struct spi_device *spi)
 {
-	kernel_neon_begin();
+	// kernel_neon_begin();
 	struct rfnm_bootconfig *cfg;
 	struct rfnm_eeprom_data *eeprom_data;
 	cfg = memremap(RFNM_BOOTCONFIG_PHYADDR, SZ_4M, MEMREMAP_WB);
@@ -610,7 +648,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 		cfg->daughterboard_eeprom[dgb_id].board_id != RFNM_DAUGHTERBOARD_LIME) {
 		//printk("RFNM: Lime driver loaded, but daughterboard is not Lime\n");
 		memunmap(cfg);
-		kernel_neon_end();
+		// kernel_neon_end();
 		return -ENODEV;
 	}
 
@@ -630,7 +668,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 
 	dgb_dt = devm_kzalloc(dev, sizeof(struct rfnm_dgb), GFP_KERNEL);
 	if(!dgb_dt) {
-		kernel_neon_end();
+		// kernel_neon_end();
 		return -ENOMEM;
 	}
 
@@ -665,7 +703,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 	struct lms7002m_context *lms;
 	lms = lms7002m_create(&lms_hooks);
     if (lms == NULL) {
-		kernel_neon_end();
+		// kernel_neon_end();
         return -1;
     }
 	dgb_dt->priv_drv = lms;
@@ -699,7 +737,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
     if(!((read_lms_info_reg_value >> 6) & 0x1f)) {
         printk("LMS Not Found!");
 		lms7002m_destroy(lms);
-		kernel_neon_end();
+		// kernel_neon_end();
         return -1;
     }
 
@@ -735,7 +773,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 	lime_Result lms_ret = lms7002m_set_reference_clock(lms, LMS_REF_FREQ);
     if (ret != 0) {
         printk("clock tune failure %d\n", ret);
-		kernel_neon_end();
+		// kernel_neon_end();
         return -1;
     }
 
@@ -781,7 +819,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 
 	printk("RFNM: Lime daughterboard initialized\n");
 
-	kernel_neon_end();
+	// kernel_neon_end();
 
 
 	struct rfnm_api_tx_ch *tx_ch, *tx_s;
@@ -793,7 +831,7 @@ static int rfnm_lime_probe(struct spi_device *spi)
 	rx_s = devm_kzalloc(dev, sizeof(struct rfnm_api_rx_ch), GFP_KERNEL);
 
 	if(!tx_ch || !rx_ch || !tx_s || !rx_s) {
-		kernel_neon_end();
+		// kernel_neon_end();
 		return -ENOMEM;
 	}
 
