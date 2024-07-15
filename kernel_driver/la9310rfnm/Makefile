@@ -27,11 +27,13 @@ rfnm_granita-objs += rfnm_fe_generic.o
 rfnm_granita-objs += rfnm_fe_granita0.o
 rfnm_granita-objs += rfnm_granita_rffc.o
 
-rfnm_granita-objs += ../../../g_icewings/api/ErrHandling.o
-rfnm_granita-objs += ../../../g_icewings/kernel/SiKernel.o
-rfnm_granita-objs += ../../../g_icewings/system/SiSystem.o
-rfnm_granita-objs += ../../../g_icewings/api/SiIceWing_parser.o
-rfnm_granita-objs += ../../../g_icewings/core/SiIceWing_Core.o 
+rfnm_granita-objs += granita_driver.o
+rfnm_granita-objs += rfnm_granita_old_trimmed.o
+# rfnm_granita-objs += ../../../g_icewings/api/ErrHandling.o
+# rfnm_granita-objs += ../../../g_icewings/kernel/SiKernel.o
+# rfnm_granita-objs += ../../../g_icewings/system/SiSystem.o
+# rfnm_granita-objs += ../../../g_icewings/api/SiIceWing_parser.o
+# rfnm_granita-objs += ../../../g_icewings/core/SiIceWing_Core.o 
 
 
 
